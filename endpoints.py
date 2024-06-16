@@ -1,6 +1,7 @@
 from flask import request, jsonify
 from sqlalchemy.orm import sessionmaker
-from models import TestUpdateData, engine
+from Database.models import TestUpdateData
+from Database.db import engine
 from events import broadcast_update
 
 Session = sessionmaker(bind=engine)
