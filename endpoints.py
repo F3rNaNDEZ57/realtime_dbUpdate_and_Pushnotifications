@@ -1,21 +1,73 @@
 from flask import request, jsonify
-from sqlalchemy.orm import sessionmaker
-from models import TestUpdateData, engine
-from events import broadcast_update
+from Database.models import TestUpdateData
+from Database.db import Session
 
-Session = sessionmaker(bind=engine)
-session = Session()
+def create_data():
+    session = Session()
+    try:
+        data = request.get_json()
+        new_entry = TestUpdateData(value=data['value'])
+        session.add(new_entry)
+        session.commit()
+        return jsonify(new_entry.to_dict()), 201
+    except Exception as e:
+        session.rollback()
+        return {"error": str(e)}, 400
+    finally:
+        session.close()
 
-def add_data():
-    value = request.json.get('value')
-    new_data = TestUpdateData(value=value)
-    session.add(new_data)
-    session.commit()
+def get_all_data():
+    session = Session()
+    try:
+        data = session.query(TestUpdateData).all()
+        return jsonify([d.to_dict() for d in data])
+    except Exception as e:
+        return {"error": str(e)}, 400
+    finally:
+        session.close()
 
-    broadcast_update({'id': new_data.id, 'value': new_data.value})
-    return jsonify({'id': new_data.id, 'value': new_data.value})
+def get_data(id):
+    session = Session()
+    try:
+        data = session.query(TestUpdateData).get(id)
+        if data:
+            return jsonify(data.to_dict())
+        else:
+            return {"message": "Not Found"}, 404
+    except Exception as e:
+        return {"error": str(e)}, 400
+    finally:
+        session.close()
 
-def get_data():
-    data = session.query(TestUpdateData).all()
-    result = [{'id': d.id, 'value': d.value} for d in data]
-    return jsonify(result)
+def update_data(id):
+    session = Session()
+    try:
+        data = session.query(TestUpdateData).get(id)
+        if data:
+            new_data = request.get_json()
+            data.value = new_data['value']
+            session.commit()
+            return jsonify(data.to_dict())
+        else:
+            return {"message": "Not Found"}, 404
+    except Exception as e:
+        session.rollback()
+        return {"error": str(e)}, 400
+    finally:
+        session.close()
+
+def delete_data(id):
+    session = Session()
+    try:
+        data = session.query(TestUpdateData).get(id)
+        if data:
+            session.delete(data)
+            session.commit()
+            return {"message": "Delete successful"}, 200
+        else:
+            return {"message": "Not Found"}, 404
+    except Exception as e:
+        session.rollback()
+        return {"error": str(e)}, 400
+    finally:
+        session.close()
