@@ -1,0 +1,139 @@
+openapi: 3.0.3
+info:
+  title: Test Update Data API
+  description: API for managing Test Update Data entries
+  version: 1.0.0
+paths:
+  /test_update_data:
+    post:
+      summary: Create a new TestUpdateData entry
+      operationId: endpoints.create_data
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TestUpdateDataInput'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TestUpdateData'
+    get:
+      summary: Get all TestUpdateData entries
+      operationId: endpoints.get_all_data
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TestUpdateData'
+  /test_update_data/{id}:
+    get:
+      summary: Get a single TestUpdateData entry by ID
+      operationId: endpoints.get_data
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TestUpdateData'
+        '404':
+          description: Not Found
+    put:
+      summary: Update a TestUpdateData entry by ID
+      operationId: endpoints.update_data
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TestUpdateDataInput'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TestUpdateData'
+        '404':
+          description: Not Found
+    delete:
+      summary: Delete a TestUpdateData entry by ID
+      operationId: endpoints.delete_data
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Delete successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Delete successful
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Not Found
+        '400':
+          description: Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+components:
+  schemas:
+    TestUpdateData:
+      type: object
+      properties:
+        id:
+          type: integer
+        value:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    TestUpdateDataInput:
+      type: object
+      properties:
+        value:
+          type: integer
+      required:
+        - value

@@ -15,7 +15,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.add_api("swagger.yml")
+app.add_api("swagger.yaml")
 
 
 @app.route('/')
@@ -23,4 +23,4 @@ def home():
     return render_template('index.html')
 
 if __name__ == "__main__":
-    app.run(port=8000)
+    app.run()
