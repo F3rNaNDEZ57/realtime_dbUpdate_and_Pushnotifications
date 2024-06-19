@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time DB Updates</title>
+    <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
+</head>
+<body>
+    <h1>Real-Time Database Updates</h1>
+    <ul id="dataList"></ul>
+
+    <script>
+        const socket = io('http://localhost:5001', { transports: ['websocket'], upgrade: false });
+
+        socket.on('connect', () => {
+            console.log('Connected to the server');
+        });
+
+        socket.on('disconnect', () => {
+            console.log('Disconnected from the server');
+        });
+
+        // Handle real-time data updates
+        socket.on('data_update_response', function(data) {
+            console.log('Real-time update received:', data);
+            if (data) {
+                updateDataList(data);
+            } else {
+                console.error('Error: Received invalid data');
+            }
+        });
+
+        // Fetch initial data and populate the list with the latest value
+        fetch('http://localhost:5001/get_data')
+            .then(response => response.json())
+            .then(data => {
+                if (data.length > 0) {
+                    updateDataList(data[data.length - 1]);
+                }
+            })
+            .catch(error => console.error('Error fetching initial data:', error));
+
+        function updateDataList(data) {
+            const dataList = document.getElementById('dataList');
+            dataList.innerHTML = '';  // Clear the list
+            const listItem = document.createElement('li');
+            listItem.textContent = `ID: ${data.id}, Value: ${data.value}, Created At: ${data.created_at}, Updated At: ${data.updated_at}`;
+            dataList.appendChild(listItem);
+        }
+
+        // Emit test event
+        const testUpdate = () => {
+            const data = { value: Math.floor(Math.random() * 1000) };
+            socket.emit('data_update', data);
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const testButton = document.createElement('button');
+            testButton.textContent = 'Emit Test Update';
+            testButton.onclick = testUpdate;
+            document.body.appendChild(testButton);
+        });
+    </script>
+</body>
+</html>

@@ -1,6 +1,9 @@
 from flask import request, jsonify
 from Database.models import TestUpdateData
 from Database.db import Session
+import requests
+
+SOCKETIO_URL = 'http://localhost:5001'
 
 def create_data():
     session = Session()
@@ -9,7 +12,9 @@ def create_data():
         new_entry = TestUpdateData(value=data['value'])
         session.add(new_entry)
         session.commit()
-        return jsonify(new_entry.to_dict()), 201
+        response = new_entry.to_dict()
+        requests.post(f'{SOCKETIO_URL}/emit_update', json=response)
+        return jsonify(response), 201
     except Exception as e:
         session.rollback()
         return {"error": str(e)}, 400
@@ -47,7 +52,9 @@ def update_data(id):
             new_data = request.get_json()
             data.value = new_data['value']
             session.commit()
-            return jsonify(data.to_dict())
+            response = data.to_dict()
+            requests.post(f'{SOCKETIO_URL}/emit_update', json=response)
+            return jsonify(response)
         else:
             return {"message": "Not Found"}, 404
     except Exception as e:
@@ -63,6 +70,7 @@ def delete_data(id):
         if data:
             session.delete(data)
             session.commit()
+            requests.post(f'{SOCKETIO_URL}/emit_update', json={'id': id, 'deleted': True})
             return {"message": "Delete successful"}, 200
         else:
             return {"message": "Not Found"}, 404
